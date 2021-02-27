@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, make_response
 from flask_caching import Cache
 from flask_restful import Resource, Api
 
@@ -56,15 +56,11 @@ class Weather(Resource):
 
                 cache.set(key=city_name, value=payload)
 
-                return {
-                    "data": cache.get(city_name)
-                }
+                return make_response(render_template('index.html', data=cache.get(city_name)))
         else:
-            return {
-                "data": cache.get(city_name)
-            }
+            return make_response(render_template('index.html', data=cache.get(city_name)))
         return {
-            "message": "Sorry We coudn't find the specified city."
+              "message": "Sorry We coudn't find the specified city."
         }
 
 
