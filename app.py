@@ -50,7 +50,7 @@ def weather_index():
 
             if response.status_code == 200:
 
-                if len(cached_data) > 5:
+                if len(cached_data) >= 5:
                     cache.delete(cached_data.popleft())
 
                 payload = {
@@ -61,57 +61,86 @@ def weather_index():
             else:
                 error_message = "Sorry We coudn't find the specified city."
 
-            if error_message is not None:
+        if error_message is not None:
+            content = {
+                "error_message": error_message,
+                "other_cities": []
+            }
+        else:
+            try:
+                cached_city = cache.get(city_name)
                 content = {
-                    "error_message": error_message,
+                    "current_city": {
+                        "city_name": cached_city[city_name]["name"],
+                        "degree": f"{int(cached_city[city_name]['main']['temp']) - 273.15:.2f}",
+                        "state": cached_city[city_name]["weather"][0]["description"]
+                    },
                     "other_cities": []
                 }
-            else:
+            except TypeError as err:
+                logger.info("Cache already expired, it has been updated")
+                response = get_weather_data(city_name)
+                payload = {
+                    f"{city_name}": response.json()
+                }
+                cache.set(key=city_name, value=payload)
+                cached_city = cache.get(city_name)
+                content = {
+                    "current_city": {
+                        "city_name": cached_city[city_name]["name"],
+                        "degree": f"{int(cached_city[city_name]['main']['temp']) - 273.15:.2f}",
+                        "state": cached_city[city_name]["weather"][0]["description"]
+                    },
+                    "other_cities": []
+                }
+
+        cached_data = deque([cached for cached in cache.cache._cache])
+
+        if cached_data is not None and len(cached_data) > 1:
+            for cont, city in enumerate(reversed(cached_data)):
                 try:
-                    cached_city = cache.get(city_name)
-                    content = {
-                        "current_city": {
-                            "city_name": cached_city[city_name]["name"],
-                            "degree": f"{int(cached_city[city_name]['main']['temp']) - 273.15:.2f}",
-                            "state": cached_city[city_name]["weather"][0]["description"]
-                        },
-                        "other_cities": []
-                    }
-                except TypeError as err:
-                    logger.info("Cache already expired, it has been updated")
-                    response = get_weather_data(city_name)
+                    city_data = cache.get(city)
                     payload = {
-                        f"{city_name}": response.json()
+                        "city_name": city_data[city]["name"],
+                        "degree": f"{int(city_data[city]['main']['temp']) - 273.15:.2f}",
+                        "state": city_data[city]["weather"][0]["description"]
                     }
-                    cache.set(key=city_name, value=payload)
-                    cached_city = cache.get(city_name)
-                    content = {
-                        "current_city": {
-                            "city_name": cached_city[city_name]["name"],
-                            "degree": f"{int(cached_city[city_name]['main']['temp']) - 273.15:.2f}",
-                            "state": cached_city[city_name]["weather"][0]["description"]
-                        },
-                        "other_cities": []
-                    }
-
-            if cached_data is not None:
-                for cont, city in enumerate(cached_data):
-                    if city != city_name:
-                        try:
-                            city_data = cache.get(city)
-                            payload = {
-                                "city_name": city_data[city]["name"],
-                                "degree": f"{int(city_data[city]['main']['temp']) - 273.15:.2f}",
-                                "state": city_data[city]["weather"][0]["description"]
-                            }
-                            content["other_cities"].append(payload)
-                        except TypeError as err:
-                            cache.delete(key=city)
-            content["other_cities"] = reversed(content["other_cities"])
-            return make_response(render_template('index.html', **content))
-
+                    content["other_cities"].append(payload)
+                except TypeError as err:
+                    cache.delete(key=city)
+        return make_response(render_template('index.html', **content))
     else:
-        return make_response(render_template("index.html"))
+        content = {
+            "other_cities": []
+        }
+
+        cached_data = deque([cached for cached in cache.cache._cache])
+
+        data = request.args
+
+        max_number = 0
+        try:
+            if "max" in data:
+                max_number = int(data["max"])
+        except:
+            pass
+
+        if cached_data is not None:
+            for cont, city in enumerate(reversed(cached_data)):
+                try:
+                    if max_number != 0 and max_number <= cont:
+                        break
+                    city_data = cache.get(city)
+                    payload = {
+                        "city_name": city_data[city]["name"],
+                        "degree": f"{int(city_data[city]['main']['temp']) - 273.15:.2f}",
+                        "state": city_data[city]["weather"][0]["description"]
+                    }
+                    content["other_cities"].append(payload)
+                except TypeError as err:
+                    cache.delete(key=city)
+
+        return make_response(render_template("index.html", **content))
 
 
 if __name__ == "__main__":
