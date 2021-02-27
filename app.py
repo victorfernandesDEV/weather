@@ -1,6 +1,5 @@
 from flask import Flask, request, redirect, render_template, make_response
 from flask_caching import Cache
-from flask_restful import Resource, Api
 
 from loguru import logger
 
@@ -13,7 +12,6 @@ from dotenv import load_dotenv
 
 
 app = Flask(__name__)
-api = Api(app)
 
 
 load_dotenv()
@@ -30,11 +28,10 @@ config = {
 app.config.from_mapping(config)
 cache = Cache(app)
 
-
+# fetch over the weather api and retrieve the data corresponding to the passed city name.
 def get_weather_data(city_name):
     response = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={os.getenv('API_Key')}")
     return response
-
 
 @app.route("/weather", methods=["GET", "POST"])
 def weather_index():
@@ -44,6 +41,9 @@ def weather_index():
         error_message = None
 
         cached_data = deque([cached for cached in cache.cache._cache])
+
+        # if the passed city are not in cache, it will add the city to the cache.
+        # if the city are not found in the api, it will be return an error message.
         if city_name not in cached_data:
 
             response = get_weather_data(city_name)
@@ -68,6 +68,7 @@ def weather_index():
             }
         else:
             try:
+                # gets the city active in the cache, if the time of cache has been expired, it will bypass over the error
                 cached_city = cache.get(city_name)
                 content = {
                     "current_city": {
@@ -96,6 +97,7 @@ def weather_index():
 
         cached_data = deque([cached for cached in cache.cache._cache])
 
+        # return the list of other cities in cache if have more than one.
         if cached_data is not None and len(cached_data) > 1:
             for cont, city in enumerate(reversed(cached_data)):
                 try:
@@ -118,17 +120,20 @@ def weather_index():
 
         data = request.args
 
-        max_number = 0
+        max_number = None
         try:
             if "max" in data:
                 max_number = int(data["max"])
         except:
             pass
 
+        # return all cities in cache
         if cached_data is not None:
             for cont, city in enumerate(reversed(cached_data)):
                 try:
-                    if max_number != 0 and max_number <= cont:
+                    # verify if max_number is valid (extracted from querystring), if is tru (more than 0)
+                    # it will be used to limit the loop
+                    if max_number != None and max_number <= cont:
                         break
                     city_data = cache.get(city)
                     payload = {
@@ -201,6 +206,7 @@ def get_data_by_city_name(city_name: str):
 
     cached_data = deque([cached for cached in cache.cache._cache])
 
+    # return the list of other cities in cache if have more than one.
     if cached_data is not None and len(cached_data) > 1:
         for cont, city in enumerate(reversed(cached_data)):
             try:
