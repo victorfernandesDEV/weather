@@ -3,8 +3,10 @@ Weather service
 
 To run this application, you will need to install Poetry on your machine.
 
-    With poetry, you will enter in the folder, and tipe: poetry instal
+    With poetry, you will enter in the folder, and tipe: poetry install
     It will install all dependencies need of the project
+    After that, run poetry shell to enter in the virtualenv created by poetry and run testes and the application
+    You'll need to activate the virtualenv. For example, in my machine, the path to active is c:/Users/Victor Fernandes/AppData/Local/pypoetry/Cache/virtualenvs/weather-g9REWXL8-py3.8/Scripts/activate.bat
 
 To test, we will use pytest. To test, just type "pytest" and see the magic.
 
