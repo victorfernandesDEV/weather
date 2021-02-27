@@ -24,10 +24,10 @@ def client():
     client = flask_app.test_client()
     yield client
 
-#def test_weather_endpoint(client):
-#    for city in valid_cities_list:
-#        response = get_weather_data(city)
-#        assert 200 == response.status_code
+def test_weather_endpoint(client):
+    for city in valid_cities_list:
+        response = get_weather_data(city)
+        assert 200 == response.status_code
 
 def test_post_valid_cities(client):
     for city in valid_cities_list:
