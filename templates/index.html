@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather</title>
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <style>
+        form {
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <form meethod="GET">
+                    <p class="text-center">How is the weather in <input type="text" name="city_name" id="city_name"> now?</P>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if current_city %}
+        <div class="m-5"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card text-center">
+                        <div class="card-header">
+                            {{ current_city.city_name }}
+                        </div>
+                        <div class="card-body">
+                            <h5>{{ current_city.degree }} ºCelsius</h5>
+                        </div>
+                        <div class="card-footer text-muted">
+                            {{ current_city.state }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="m-5"></div>
+    {% endif %}
+
+    {% if other_cities %}
+        <div class="container">
+            <div class="row">
+                {% for city in other_cities %}
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                {{ city.city_name }}
+                            </div>
+                            <div class="card-body">
+                                <h5>{{ city.degree }} ºCelsius</h5>
+                            </div>
+                            <div class="card-footer text-muted">
+                                {{ city.state }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</body>
+</html>
