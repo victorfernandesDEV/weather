@@ -23,21 +23,45 @@
     </div>
 
     {% if current_city %}
-        <code>{{ current_city.city_name }}</code>
-        <p>{{ current_city.degree }}</p>
-        <code>{{ current_city.state }}</code>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card text-center">
+                        <div class="card-header">
+                            {{ current_city.city_name }}
+                        </div>
+                        <div class="card-body">
+                            <h5>{{ current_city.degree }} ºCelsius</h5>
+                        </div>
+                        <div class="card-footer text-muted">
+                            {{ current_city.state }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
 
-    {% if data %}
-        <div class="container"
+    {% if other_cities %}
+        <div class="container">
             <div class="row">
-                {% for dt in data['cached_cities'] %}
-                    <div class="col-md-4">
-                        <p>{{ dt }}</p>
+                {% for city in other_cities %}
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                {{ city.city_name }}
+                            </div>
+                            <div class="card-body">
+                                <h5>{{ city.degree }} ºCelsius</h5>
+                            </div>
+                            <div class="card-footer text-muted">
+                                {{ city.state }}
+                            </div>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
-        ></div>
+        </div>
     {% endif %}
 </body>
 </html>
