@@ -55,13 +55,20 @@ class Weather(Resource):
                 }
 
                 cache.set(key=city_name, value=payload)
+            else:
+                return {
+                    "message": "Sorry We coudn't find the specified city."
+                }
 
-                return make_response(render_template('index.html', data=cache.get(city_name)))
-        else:
-            return make_response(render_template('index.html', data=cache.get(city_name)))
-        return {
-              "message": "Sorry We coudn't find the specified city."
+        content = {
+            "current_city": {
+                "city_name": cache.get(city_name)[city_name]["name"],
+                "degree": f"{int(cache.get(city_name)[city_name]['main']['temp']) - 273.15:.2f}",
+                "state": cache.get(city_name)[city_name]["weather"][0]["description"]
+            }
         }
+
+        return make_response(render_template('index.html', **content))
 
 
 api.add_resource(Weather, "/<city_name>")
