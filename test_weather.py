@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 
 import pytest
@@ -39,6 +40,17 @@ def test_post_valid_cities(client):
         assert 200 == response.status_code
         assert city in response.html.html
 
+def test_post_invalid_cities(client):
+    for invalid_city in invalid_Cities_list:
+        response = HTMLSession()
+        response.mount("http://test", WSGIAdapter(flask_app))
+        payload = {
+            "city_name": invalid_city
+        }
+        response = response.post("http://test/weather", data=payload)
+        match = re.search(r"Sorry We coudn't find the specified city.", response.html.text).group()
+        assert 200 == response.status_code
+        assert "Sorry We coudn't find the specified city." == match
 
 
 
