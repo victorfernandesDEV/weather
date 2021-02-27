@@ -14,7 +14,7 @@ from app import get_weather_data
 API_KEY = os.getenv('API_Key')
 
 
-valid_cities_list = ["Recife", "Itambé", "João Pessoa", "Pedras de Fogo"]
+valid_cities_list = ["Recife", "Itambé", "João Pessoa", "Pedras de Fogo", "Bauru"]
 invalid_Cities_list = ["SDFsdfs", "sadsdasda", "SADSASDA"]
 
 
@@ -52,8 +52,13 @@ def test_post_invalid_cities(client):
         assert 200 == response.status_code
         assert "Sorry We coudn't find the specified city." == match
 
-
-
-
-
-
+def test_get_city_and_update_by_name(client):
+    for city in valid_cities_list:
+        response = HTMLSession()
+        response.mount("http://test", WSGIAdapter(flask_app))
+        payload = {
+            "city_name": city
+        }
+        response = response.get(f"http://test/weather/{city}")
+        assert 200 == response.status_code
+        assert city in response.html.html
