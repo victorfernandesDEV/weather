@@ -22,6 +22,17 @@
         </div>
     </div>
 
+    {% if error_message %}
+        <div class="m-5"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <p>{{ error_message }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if current_city %}
         <div class="m-5"></div>
         <div class="container">
@@ -48,7 +59,7 @@
         <div class="container">
             <div class="row">
                 {% for city in other_cities %}
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card text-center">
                             <div class="card-header">
                                 {{ city.city_name }}
