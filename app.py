@@ -25,7 +25,7 @@ DEBUG = True if os.getenv("DEBUG") == "True" else False
 config = {
     "DEBUG": DEBUG,
     "CACHE_TYPE": "simple",
-    "CACHE_DEFAULT_TIMEOUT": 10
+    "CACHE_DEFAULT_TIMEOUT": 300
 }
 app.config.from_mapping(config)
 cache = Cache(app)
