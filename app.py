@@ -48,7 +48,7 @@ class Weather(Resource):
                 logger.info("Foi cacheado")
 
                 if len(cached_data) >= 5:
-                    logger.info(f"Removido do cache {cached_data.popleft()}")
+                    cache.delete(cached_data.popleft())
 
                 payload = {
                     f"{city_name}": response.json()
@@ -65,9 +65,22 @@ class Weather(Resource):
                 "city_name": cache.get(city_name)[city_name]["name"],
                 "degree": f"{int(cache.get(city_name)[city_name]['main']['temp']) - 273.15:.2f}",
                 "state": cache.get(city_name)[city_name]["weather"][0]["description"]
-            }
+            },
+            "other_cities": []
         }
 
+        if cached_data is not None:
+            for cont, city in enumerate(cached_data):
+                if city != city_name:
+                    city_data = cache.get(city)
+                    payload = {
+                        "city_name": city_data[city]["name"],
+                        "degree": f"{int(city_data[city]['main']['temp']) - 273.15:.2f}",
+                        "state": city_data[city]["weather"][0]["description"]
+                    }
+
+                    content["other_cities"].append(payload)
+        content["other_cities"] = reversed(content["other_cities"])
         return make_response(render_template('index.html', **content))
 
 
