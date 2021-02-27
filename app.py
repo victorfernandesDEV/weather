@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, make_response
+from flask import Flask, request, render_template, make_response
 from flask_caching import Cache
 
 from loguru import logger
@@ -11,7 +11,7 @@ from collections import deque
 from dotenv import load_dotenv
 
 
-app = Flask(__name__)
+flask_app = Flask(__name__)
 
 
 load_dotenv()
@@ -20,20 +20,24 @@ load_dotenv()
 DEBUG = True if os.getenv("DEBUG") == "True" else False
 
 
+API_KEY = os.getenv('API_Key')
+
+
 config = {
     "DEBUG": DEBUG,
     "CACHE_TYPE": "simple",
     "CACHE_DEFAULT_TIMEOUT": 300
 }
-app.config.from_mapping(config)
-cache = Cache(app)
+flask_app.config.from_mapping(config)
+cache = Cache(flask_app)
+
 
 # fetch over the weather api and retrieve the data corresponding to the passed city name.
 def get_weather_data(city_name):
-    response = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={os.getenv('API_Key')}")
+    response = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}")
     return response
 
-@app.route("/weather", methods=["GET", "POST"])
+@flask_app.route("/weather", methods=["GET", "POST"])
 def weather_index():
     if request.method == "POST":
         city_name = request.form["city_name"]
@@ -148,7 +152,7 @@ def weather_index():
         return make_response(render_template("index.html", **content))
 
 
-@app.route("/weather/<string:city_name>", methods=["GET"])
+@flask_app.route("/weather/<string:city_name>", methods=["GET"])
 def get_data_by_city_name(city_name: str):
 
     error_message = None
@@ -223,4 +227,4 @@ def get_data_by_city_name(city_name: str):
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG)
+    flask_app.run(debug=DEBUG)
